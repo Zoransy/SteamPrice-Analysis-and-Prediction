@@ -6,12 +6,12 @@ from bs4 import BeautifulSoup
 import re
 import pandas as pd
 from fake_useragent import UserAgent
-import browser_cookie3
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from lxml import etree
 
 # 速度优化
 
@@ -121,9 +121,27 @@ def getdate(soup):  # 发行日期
 
 
 def userreviewsrate(soup):  # 总体数量好评率
-    a = soup.find(class_="user_reviews_summary_row")
-    k = str(a.attrs['data-tooltip-html'])
-    return k
+    # a = soup.find(class_="user_reviews_summary_row")
+    # k = str(a.attrs['data-tooltip-html'])
+    # return k
+
+
+    # span = soup.find('span', class_='nonresponsive_hidden responsive_reviewdesc')  # 根据class属性找到span标签
+    # if span:  # 如果找到了span标签
+    #     text = span.get_text(strip=True)  # 提取span标签中的文字，并去掉空白字符
+    #     return text  # 返回文字
+    # else:  # 如果没有找到span标签
+    #     return None  # 返回None
+    tree = etree.HTML(soup)  # 将网页转换为HTML树
+    xpaths = [
+        '/html/body/div[1]/div[7]/div[6]/div[3]/div[2]/div[1]/div[4]/div[1]/div[2]/div[1]/div/div[3]/div[1]/div[2]/div[2]/span[3]/text()',
+        '/html/body/div[1]/div[7]/div[6]/div[3]/div[2]/div[1]/div[4]/div[1]/div[2]/div[2]/div/div[3]/div[1]/div[2]/div[2]/span[3]/text()',
+        '/html/body/div[1]/div[7]/div[6]/div[3]/div[2]/div[1]/div[4]/div[1]/div[2]/div[1]/div/div[3]/div[1]/div/div[2]/span[3]/text()']  # 定义一个列表，存储可能需要的xpath表达式
+    for xpath in xpaths:  # 使用一个循环，遍历这个列表
+        span = tree.xpath(xpath)  # 通过xpath找到span标签
+        if span:  # 如果找到了span标签
+            return span  # 返回文本内容
+    return None  # 如果没有找到任何文本内容，返回None
 
 
 def isdlc(soup):  # 判断是否为DLC
@@ -184,7 +202,7 @@ def getdetail(x):
                 des = description(soup)
                 reviews = reviewsummary(soup)
                 date = getdate(soup)
-                rate = userreviewsrate(soup)
+                rate = userreviewsrate(str(soup))
                 dev = developer(soup)
                 review = getreviews(str(x['ID']))
                 # = gameprice(soup)
@@ -196,7 +214,7 @@ def getdetail(x):
                 des = getdlctext(soup)
                 reviews = reviewsummary(soup)
                 date = getdate(soup)
-                rate = userreviewsrate(soup)
+                rate = userreviewsrate(str(soup))
                 dev = developer(soup)
                 review = getreviews(str(x['ID']))
                 #price = gameprice(soup)
@@ -242,7 +260,7 @@ if __name__ == "__main__":
     df1['描述'] = df1.apply(lambda x: x['详细'][2], axis=1)
     df1['近期评价'] = df1.apply(lambda x: x['详细'][3], axis=1)
     df1['发行日期'] = df1.apply(lambda x: x['详细'][4], axis=1)
-    df1['近期数量好评率'] = df1.apply(lambda x: x['详细'][5], axis=1)
+    df1['总体数量好评率'] = df1.apply(lambda x: x['详细'][5], axis=1)
     df1['开发商'] = df1.apply(lambda x: x['详细'][6], axis=1)
     df1['评论'] = df1.apply(lambda x: x['详细'][7], axis=1)
     df1.drop(df1.columns[2], axis=1, inplace=True)

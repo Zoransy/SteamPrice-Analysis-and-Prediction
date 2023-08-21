@@ -6,7 +6,6 @@ from bs4 import BeautifulSoup
 import re
 import pandas as pd
 from fake_useragent import UserAgent
-import browser_cookie3
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By

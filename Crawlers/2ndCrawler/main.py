@@ -3,7 +3,6 @@ from bs4 import BeautifulSoup
 import re
 import pandas as pd
 from fake_useragent import UserAgent
-import openpyxl
 # headers = {
 #     'Accept': '',
 #     'Accept-Encoding': '',
